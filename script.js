@@ -9,19 +9,40 @@ $(function () {
   // time-block containing the button that was clicked? How might the id be
   // useful when saving the description in local storage?
   //
-    var currentHour = dayjs().format("HH");
 
     var scheduleContainer = $("#schedule-container");
+    var dayHeading = $("#current-day");
+
+    var currentDate = dayjs().format("dddd, MMMM D");
+    var currentDay = parseInt(dayjs().format("D"));
+    var currentHour = dayjs().format("HH");
+
+    // Display the current day at the top of the page
+    currentDate += getDateSuffix(currentDay);
+    $(dayHeading).text(currentDate);
+
+    // Apply the styling to the blocks, dependent on the current time
     for (i=0; i<scheduleContainer.children().length; i++) {
         applyTimeClass(scheduleContainer.children()[i], currentHour);
+    }
+
+    function getDateSuffix(day) {
+        var st = [1, 21, 31];
+        var nd = [2, 22];
+
+        if (st.find((d) => day === d)) {
+            return "st";
+        } else if (nd.find((d) => day === d)) {
+            return "nd";
+        } else {
+            return "th";
+        }
     }
     
     function applyTimeClass(scheduleBlock, currentHour) {
         var blockHour = $(scheduleBlock).attr('id').slice(-2);
 
         // If currentHour is greater than blockHour, then blockHour is in the past
-        console.log(currentHour > blockHour);
-        console.log(currentHour < blockHour);
         if (currentHour > blockHour) {
             $(scheduleBlock).addClass("past");
         }
@@ -40,6 +61,4 @@ $(function () {
   // TODO: Add code to get any user input that was saved in localStorage and set
   // the values of the corresponding textarea elements. HINT: How can the id
   // attribute of each time-block be used to do this?
-  //
-  // TODO: Add code to display the current date in the header of the page.
 });
