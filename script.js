@@ -2,16 +2,8 @@
 // the code isn't run until the browser has finished rendering all the elements
 // in the html.
 $(function () {
-  // TODO: Add a listener for click events on the save button. This code should
-  // use the id in the containing time-block as a key to save the user input in
-  // local storage. HINT: What does `this` reference in the click listener
-  // function? How can DOM traversal be used to get the "hour-x" id of the
-  // time-block containing the button that was clicked? How might the id be
-  // useful when saving the description in local storage?
-  //
-
     var scheduleContainer = $("#schedule-container");
-    var dayHeading = $("#current-day");
+    var dayHeadingEl = $("#current-day");
 
     var currentDate = dayjs().format("dddd, MMMM D");
     var currentDay = parseInt(dayjs().format("D"));
@@ -19,13 +11,24 @@ $(function () {
 
     // Display the current day at the top of the page
     currentDate += getDateSuffix(currentDay);
-    $(dayHeading).text(currentDate);
+    $(dayHeadingEl).text(currentDate);
 
     // Apply the styling to the blocks, dependent on the current time
     for (i=0; i<scheduleContainer.children().length; i++) {
         applyTimeClass(scheduleContainer.children()[i], currentHour);
     }
 
+    // Add event listener to the schedule container
+    scheduleContainer.on("click", function(event) {
+        if(event.target.matches(".saveBtn")) {
+            saveEvent($(event.target).parent());
+        }
+    });
+
+    // Load events from local storage to the page
+    loadEvents();
+
+    // Function to get 'st', 'nd', or 'th' suffix for the date display
     function getDateSuffix(day) {
         var st = [1, 21, 31];
         var nd = [2, 22];
@@ -39,6 +42,7 @@ $(function () {
         }
     }
     
+    // Function to add the past, present or future class to determine the style color
     function applyTimeClass(scheduleBlock, currentHour) {
         var blockHour = $(scheduleBlock).attr('id').slice(-2);
 
@@ -56,9 +60,27 @@ $(function () {
         else {
             $(scheduleBlock).addClass("present");
         }
-    };
+    }
 
-  // TODO: Add code to get any user input that was saved in localStorage and set
-  // the values of the corresponding textarea elements. HINT: How can the id
-  // attribute of each time-block be used to do this?
+    // Function to save the contents of a text area to local storage as a calendar event
+    function saveEvent(block) {
+        var id = block.attr("id");
+        var textBlockEl = $(block.children(".description")[0]);
+        var calendarEvent = textBlockEl.val();
+
+        localStorage.setItem(id, calendarEvent);
+    }
+
+    // Function to load the calendar events in local storage to the page
+    function loadEvents() {
+        for (i = 9; i < 18; i++) {
+            var hourId = "hour-" + i.toLocaleString('en-US',
+            {minimumIntegerDigits: 2, useGrouping: false})
+            if (localStorage.hasOwnProperty(hourId)) {
+                var hourBlockEl = $("#" + hourId);
+                var hourTextEl = $(hourBlockEl.children(".description")[0]);
+                hourTextEl.val(localStorage[hourId]);
+            }
+        }
+    }
 });
